@@ -20,7 +20,6 @@ import os
 import subprocess
 import sys
 import argparse
-import atexit
 
 import handler
 import benchmark
@@ -46,8 +45,6 @@ def resolve_dependencies(repositories, folders, branches, depths):
             zip(repositories, folders, branches, depths):
         if (os.path.exists(os.getcwd() + "/" + folder) == False):
             git_clone(repo, branch, depth)     
-        #delete later
-        waiting = input("Waiting for .JSON file to be copied to the right place.")
         dependencies_path = "./" + folder + "/dependencies/dependencies.json"
         if(os.path.exists(dependencies_path) == True):
             dependencies_json = handler.json_decode(dependencies_path)
@@ -64,11 +61,7 @@ def maven_build(param):
     subprocess.call(["mvn", "clean", "install", "-f",\
                      "./trainbenchmark-core/pom.xml", "-P",param,])
 
-def test():
-    print ("Running!")
 
-
-atexit.register(test)
 parser = argparse.ArgumentParser();
 parser.add_argument("-g","--generate",
                     help="generate models too",
@@ -77,13 +70,13 @@ parser.add_argument("-b","--benchmark",
                     help="run the benchmark tests too",
                     action="store_true")
 parser.add_argument("-c","--core",
-                    help="build the core",
+                    help="just build the core",
                     action="store_true")
 parser.add_argument("-f","--format",
-                    help="build the format",
+                    help="just build the format",
                     action="store_true")
 parser.add_argument("-t","--tools",
-                    help="build the tools",
+                    help="just build the tools",
                     action="store_true")
 
 args = parser.parse_args()
