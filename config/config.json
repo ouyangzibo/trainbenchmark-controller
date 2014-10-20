@@ -1,7 +1,7 @@
 {
   "scenarios": [
     "User",
-	"XForm"
+    "XForm"
   ],
   "MAVEN_OPTS": {
     "Xmx": "512m",
