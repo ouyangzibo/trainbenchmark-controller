@@ -1,6 +1,7 @@
 {
   "scenarios": [
-    "Batch"
+    "User",
+	"XForm"
   ],
   "MAVEN_OPTS": {
     "Xmx": "512m",
@@ -17,14 +18,13 @@
   "verbose": false,
   "defaultArgs": "",
   "queries": [
-    "SegmentLength",
-            "SwitchNodes",
-            "RouteEntry",
-            "RouteRouteDefinition",
-            "TrackElementSensor"
+    "PosLength",
+    "RouteSensor",
+    "SignalNeighbor",
+    "SwitchSensor"
   ],
   "tools": [
-    "java"
+    "sesame"
   ],
-  "format": "emf"
+  "format": "rdf"
 }
