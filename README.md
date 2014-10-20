@@ -30,7 +30,7 @@ That will install every third-party libraries from `trainbenchmark-controller/ex
 Note that root password is required for the successful deployment. Furthermore, do not execute `__init__.py` by accident instead.
 After this step, you are able to [run the main scripts](#Usage).
 
-### Configuration
+### <a name="Configuration"></a>Configuration
 Every configuration parameter which matters is stored in the `config.json` file. A typical structure of it can be seen here:
  
 ```
@@ -155,7 +155,7 @@ The most important python modules of trainbenchmark-controller are the following
 
 Important fact that all modules work with the certain tools and formats, which are given in `config.json`.
 
-### Usage
+### <a name="Usage"></a>Usage
 After the step of cloning the repository and install the required modules furthermore adjust the configuration file, you are able to build the projects by running the following script from the `trainbenchmark-controller/src/controller` directory, like this:
 `./build.py`
 
