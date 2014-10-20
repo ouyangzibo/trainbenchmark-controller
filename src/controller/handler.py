@@ -8,7 +8,7 @@ by the other modules.
 
 Functions:
     set_working_directory: change the working directory
-    get_power_of_two: creates a list of squared numbers
+    get_power_of_two: creates a list of power of 2 numbers
     json_validate: json schema validation
     json_decode: load json file to a python json object
 """
