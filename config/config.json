@@ -1,0 +1,30 @@
+{
+  "scenarios": [
+    "User",
+    "XForm"
+  ],
+  "MAVEN_OPTS": {
+    "Xmx": "512m",
+    "XX:MaxPermSize": "256m"
+  },
+  "JAVA_OPTS": {
+    "xmx": "1g",
+    "maxPermSize": "256m"
+  },
+  "minSize": 1,
+  "maxSize": 4,
+  "workspacePath": ".",
+  "timeout": "12m",
+  "verbose": false,
+  "defaultArgs": "",
+  "queries": [
+    "PosLength",
+    "RouteSensor",
+    "SignalNeighbor",
+    "SwitchSensor"
+  ],
+  "tools": [
+    "sesame"
+  ],
+  "format": "rdf"
+}
