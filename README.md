@@ -1,10 +1,10 @@
 #Train Benchmark Controller
 
 ### Overview
-Trainbenchmark-controller is responsible for building the actual projects, generating the models and also running the benchmark tests. The scripts are written in Python 3 programming language. Every process is executed on the base of the `config.json` file. To alter the default configuration of Train Benchmark, just modify `config.json` file. You can find more information about the configuration parameters [below](#Configuration).
+Trainbenchmark-controller is responsible for providing a configuration for Train Benchmark and also support management for building the actual projects, generating the models and also running the benchmark tests. The scripts are written in Python programming language and every process is executed on the base of a `config.json` file. To alter the default configuration of Train Benchmark, just modify `config.json` file. You can find more information about the configuration parameters [below](#Configuration).
 
 ### Requirements
-Apart from the fundamental requirements that is also necessary to possess a Python 3 interpreter. All modules were written and tested on Linux operating system, so there is no guarantee yet that the scripts can be perfectly used on Windows.
+Apart from the fundamental requirements like git, maven etc. (described [here](https://github.com/FTSRG/trainbenchmark-core/blob/master/README.md)) that is also necessary to possess a Python 3 interpreter. In the case of using virtual environment, python3.4 interpreter is necessary. Find further information about virtual environments [here](#pyvenv). All modules were written and tested on Linux Ubuntu operating system, so there is no guarantee yet that the scripts can be perfectly used on Windows.
 For executing scripts, there are no restrictions for the actual working directories, which means you can run the modules from any path.
 If any trainbenchmark projects have dependencies to each other, then they have to store a `dependencies.json` file under their `./dependencies/` subfolder.
 A typical `dependencies.json` file looks like this:
@@ -18,17 +18,31 @@ A typical `dependencies.json` file looks like this:
     }
   }
   ```
-The example above shows the required dependency of trainbenchmark-sesame. Url means the remote repository's availability, branch and depth are git based parameters and the folder is the directory that will be created on our local space.
+The example above shows the required dependency of trainbenchmark-sesame. Url means the remote repository's availability, branch and depth are git based parameters and the folder is the name of the directory that will be created on our local space. The latter is important since the Controller will search the projects under the given directory.
 
 ### Installation guide
 At first, clone the trainbenchmark-controller repository to your local folder. It is advisable to clone to the same directory where you store the other trainbenchmark projects, since the controller searches them under the same parent folder. In the other case, if the controller did not find any of the certain projects, it would download them automatically. To clone the trainbenchmark-controller, execute the following command:
 * `git clone https://github.com/FTSRG/trainbenchmark-controller.git`
 
-Then it is necessary to install the required external modules for Python. Thus, run `init.py` script from the `trainbenchmark-controller/src/controller/` directory, like this:
- * `./init.py`
-That will install every third-party libraries from `trainbenchmark-controller/external` folder. Be careful to modify nothing from this directory.
-Note that root password is required for the successful deployment. Furthermore, do not execute `__init__.py` by accident instead.
-After this step, you are able to [run the main scripts](#Usage).
+Then it is necessary to install the required external modules for Python. Two options exist. The first one is installing packages globally and the second one is installing everything into a virtual environment.
+
+#### Install globally
+
+In this scenario every necessary external package will be installed globally to the system (e.g. pip, third-party modules). In this case just execute the following script from the `trainbenchmark-controller/init/` directory:
+* `./initialize.py`
+
+Note that root password is required for the successful deployment. As a result, the required third-party python modules will be installed and the Controller can be used already which described in details [here](#Usage)
+
+####<a name="pyvenv"></a>Install virtual environment (optional)
+
+If you wouldn't like to deploy every external package globally on your system, then use a virtual environment. In this case run the following script from the `trainbenchmark-controller/init/` directory
+* `./initialize_venv.py`
+
+After this, the python binary and third-party modules will be copied to the 'trainbenchmark-controller/tb-env' directory. Since you are not using the python interpreter globally in this case but locally, you have to activate the virtual environment with the next command:
+* `source tb-env/bin/activate`
+
+After this operation you are able to use the Controller as described [here](#Usage).
+To turn off the environment, execute the `deactivate` command. However, every time, when a new terminal window is opened, the virtual environment must be activated again. That means you have to write the same activation command to be able to use the environment.
 
 ### <a name="Configuration"></a>Configuration
 Every configuration parameter which matters is stored in the `config.json` file. A typical structure of it can be seen here:
@@ -159,11 +173,11 @@ Important fact that all modules work with the certain tools and formats, which a
 After the step of cloning the repository and install the required modules furthermore adjust the configuration file, you are able to build the projects by running the following script from the `trainbenchmark-controller/src/controller` directory, like this:
 `./build.py`
 
-This will clone the actual trainbenchmark repositories (if necessary) and run the maven build. But be careful, because some of the tools without the generated models cannot be built, as the JUNIT tests require for them (for example sesame). To avoid this conflict, it is worthwhile to execute the script at the first time like this:
+This will clone the actual trainbenchmark repositories (if necessary) and run the maven build. But be careful, because some of the tools cannot be built without the generated models, as the JUNIT tests require for them (for example sesame). To avoid this conflict, it is worthwhile to execute the script at the first time like this:
  
 ```
 ./build.py --generate
-//or the shorter version
+#or the shorter version
 ./build.py -g
  ```
 You are able to build only some parts of the Train Benchmark:
@@ -212,5 +226,5 @@ If any possible changes appeared such as alteration of paths of the projects' re
 The python modules implement different exit status codes, if some errors occurred. Possible output numbers and their meanings are the followings:
 * 1: `config.json` do not follows the defined rules, which described by the json schema
 * 2: problem appeared with the opening of `config.json` file or during the decoding process from JSON to a python object
-* 3: problem appeared with the opening of `tools_source.jso`n file or during the decoding process from JSON to a python object
+* 3: problem appeared with the opening of `tools_source.json` file or during the decoding process from JSON to a python object
 * 4: too short the range between minSize and maxSize in the `config.json` file
