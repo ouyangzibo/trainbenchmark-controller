@@ -24,42 +24,102 @@ import argparse
 import handler
 import benchmark
 import generate
-import neo4j_installer
+import loader
+import deps
 
-
-def git_clone(url, branch = "master", depth = "50"):
+def git_clone(repo):
     """
-    Clone a remote repository by git.
-    The necessary URL is provided by the url argument.
+    Clone a remote repository by git after a Repository object.
+    
+    @param repo: Repository object
     """
-    subprocess.call(["git", "clone", url, "--branch", branch, "--depth", depth])
+    subprocess.call(["git", "clone", repo.url, "--branch", repo.branch,\
+                     "--depth", repo.depth])
 
 
-def resolve_dependencies(repositories, folders, branches, depths):
+def resolve_dependencies(configurations):
     """
     Resolve the dependencies between repositories after the dependencies.json
-    files. Every new url will be stored in repositories parameter and every
-    new directory in folders too, just like branches and depths.
+    file.
+    
+    Parameters:
+    @param configurations: a list contain Configuration objects
     """
-    for repo,folder,branch,depth in \
-            zip(repositories, folders, branches, depths):
-        if (os.path.exists(os.getcwd() + "/" + folder) == False):
-            git_clone(repo, branch, depth)     
-        dependencies_path = "./" + folder + "/dependencies/dependencies.json"
-        if(os.path.exists(dependencies_path) == True):
-            dependencies_json = handler.json_decode(dependencies_path)
-            if (dependencies_json["dependencies"]["url"] not in repositories):
-                repositories.append(dependencies_json["dependencies"]["url"])
-                folders.append(dependencies_json["dependencies"]["folder"])
-                branches.append(dependencies_json["dependencies"]["branch"])
-                depths.append(dependencies_json["dependencies"]["depth"])
+    for config in configurations:
+        for repo in config.repositories:
+            dependency = loader.get_dependency(repo.name)
+            if (dependency is not None):
+                if (dependency not in config.repositories):
+                    config.add_repository(dependency)
+    # change back working directory later, so store it now
+    current_directory = os.getcwd()
+    for config in configurations:
+        # change working directory to this module's location
+        #handler.set_working_directory()
+        # jump to the project parent folder since config.path can be relative
+        #handler.set_working_directory("../../../")
+        handler.set_working_directory(config.path)
+        for repo in config.repositories:
+            if (os.path.exists(os.getcwd() + "/" + repo.folder) == False):
+                git_clone(repo)
+    handler.set_working_directory(current_directory)
 
 
-def maven_build(param):
+def maven_build(configuration, name):
+    # change back working directory later, so store it now
+    current_directory = os.getcwd() 
+    # change working directory to this module's location
+    handler.set_working_directory()
+    # path is given relatively to this module's location
+    subprocess.call(["../../shell-scripts/export_maven_opts.sh",\
+                    configuration.maven_xmx, \
+                    configuration.maven_maxpermsize])
+    # jump to the project parent folder since configuration.path can be relative
+    #handler.set_working_directory("../../../")
+    handler.set_working_directory(configuration.path)
+    subprocess.call(["mvn", "clean", "install", "-f",\
+                     "./trainbenchmark-core/pom.xml", "-P",name])
+    handler.set_working_directory(current_directory)
+
+
+def build_projects(configurations, gen_model=False, build_core=True,\
+                   build_formats=True, build_tools=True):
     """Build the projects.
     """
-    subprocess.call(["mvn", "clean", "install", "-f",\
-                     "./trainbenchmark-core/pom.xml", "-P",param,])
+    tools = list()
+    formats = list()
+    for config in configurations:
+        tools.append(config.tool)
+        formats.append(config.format)
+    for config in configurations:
+        # make a new instance of the static attribute
+        all_repositories = config.all_repositories.copy()
+        while(len(all_repositories) > 0):
+            # check if the last repo is part of the actual config repositories
+            if (all_repositories[-1] in config.repositories):
+                if (build_core == True and \
+                        all_repositories[-1].name not in tools and \
+                        all_repositories[-1].name not in formats):
+                    deps.install_dependencies(all_repositories[-1].name, \
+                                              all_repositories[-1].path)
+                    maven_build(config, all_repositories.pop().name)
+                elif (build_formats == True and \
+                        all_repositories[-1].name in formats):
+                    deps.install_dependencies(all_repositories[-1].name, \
+                                              all_repositories[-1].path)
+                    maven_build(config, all_repositories.pop().name)
+                elif (build_tools == True and \
+                        all_repositories[-1].name in tools):
+                    if (gen_model == True):
+                        generate.generate_models(config)
+                    deps.install_dependencies(all_repositories[-1].name, \
+                                              all_repositories[-1].path)
+                    maven_build(config, all_repositories.pop().name)
+                else:
+                    all_repositories.pop() 
+            else:
+                all_repositories.pop()
+            
 
 
 parser = argparse.ArgumentParser();
@@ -81,83 +141,25 @@ parser.add_argument("-t","--tools",
 
 args = parser.parse_args()
 # set working directory to this file's path
-handler.set_working_directory()
-config_path = "../../config/config.json"
-schema_path = "../../config/config_schema.json"
-tools_path = "../../config/tools_source.json"
+#handler.set_working_directory()
+
 build_all = True
 if (args.core == True or args.format == True or args.tools == True):
     build_all = False
-# remote repositories' url will be stored in repositories
-repositories = list()
-folders = list()
-branches = list()
-depths = list()
-validation = handler.json_validate(config_path, schema_path)
-if (validation == False):
+
+configurations = loader.get_configs_from_json()
+if (configurations is None):
     sys.exit(1)
-config_json = handler.json_decode(config_path)
-if (config_json == None):
-    sys.exit(2)
 
-format = config_json["format"]
-tools = config_json["tools"]
-scenarios = config_json["scenarios"]
-minsize = config_json["minSize"]
-maxsize = config_json["maxSize"]
-workspacepath = config_json["workspacePath"]
-queries = config_json["queries"]
-maven_opt = config_json["MAVEN_OPTS"]
-java_xmx = config_json["JAVA_OPTS"]["xmx"]
-java_maxpermsize = config_json["JAVA_OPTS"]["maxPermSize"]
-subprocess.call(["../../shell-scripts/export_maven_opts.sh", maven_opt["Xmx"],\
-                 maven_opt["XX:MaxPermSize"]])
 
-tools_json = handler.json_decode(tools_path)
-if(tools_json == None):
-    sys.exit(3)
-for tool in tools:
-    repositories.append(tools_json[tool]["url"])
-    folders.append(tools_json[tool]["folder"])
-    branches.append(tools_json[tool]["branch"])
-    depths.append(tools_json[tool]["depth"])
-    
+resolve_dependencies(configurations)
 
-if (args.benchmark == True or args.generate == True):
-    # power of the 2 numbers will be stored in all_size[] list as strings
-    all_size = handler.get_power_of_two(minsize, maxsize)
-    if (len(all_size) == 0):
-        print("Problem with min and maxsize. Too short the range between them.")
-        sys.exit(4)
-
-#jump back three folders
-handler.set_working_directory("../../..")
-# change directory to the configuration workspacePath parameter
-handler.set_working_directory(workspacepath)
-resolve_dependencies(repositories, folders, branches, depths)
-
-if (build_all == True or args.core == True):
-    maven_build("core")
-
-# neo4j has other external dependencies
-if ("neo4j" in tools):
-    neo4j_installer.install(os.getcwd())
-
-if (build_all == True or args.format == True):
-    maven_build(format)
-
-if (args.generate == True):
-    for scenario in scenarios:
-        generate.generate_models(format, scenario, all_size,\
-                                 java_xmx, java_maxpermsize)
-
-if (build_all == True or args.tools == True):
-    for tool in tools:
-        maven_build(tool)
-   
+if (build_all == True):
+    build_projects(configurations, args.generate, build_core=True,\
+                   build_formats=True, build_tools=True)
+else:
+    build_projects(configurations, args.generate, args.core, args.format, \
+                   args.tools)
 if (args.benchmark == True):
-    for tool in tools:
-        for scenario in scenarios:
-            for size_str in all_size:
-                benchmark.run_test(format, tool, scenario, queries, size_str,\
-                                   java_xmx, java_maxpermsize)
+    for config in configurations:
+        benchmark.run_test(config)
