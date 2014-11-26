@@ -51,6 +51,8 @@ def get_configs_from_json():
     handler.set_working_directory("../../../")
     handler.set_working_directory(config_json["workspacePath"])
     path = os.getcwd() # store the absolute path instead of relative
+    
+    measurements = config_json["measurements"]
     maven_xmx = config_json["MAVEN_OPTS"]["Xmx"]
     maven_maxpermsize = config_json["MAVEN_OPTS"]["XX:MaxPermSize"]
     java_xmx = config_json["JAVA_OPTS"]["xmx"]
@@ -59,9 +61,9 @@ def get_configs_from_json():
     # create a Configuration object for every tool
     for tool in config_json["tools"]:
         configurations.append(Configuration(scenarios, format, tool, sizes,\
-                                            queries, path, maven_xmx,\
-                                            maven_maxpermsize, java_xmx,\
-                                            java_maxpermsize))
+                                            queries, path, measurements, \
+                                            maven_xmx, maven_maxpermsize, \
+                                            java_xmx, java_maxpermsize))
     
     for config in configurations:
         # add a new Repository object to every Configuration

@@ -68,6 +68,11 @@
       "type": "string",
       "default": "."
     },
+    "measurements": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1
+    },
     "timeout": {
       "type": "string",
       "pattern": "^[0-9]+[m,h]",

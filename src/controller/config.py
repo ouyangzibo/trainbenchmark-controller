@@ -14,13 +14,15 @@ class Configuration:
     """
     all_repositories = list()
     def __init__(self, scenarios, format, tool, sizes, queries, path,\
-                 maven_xmx, maven_maxpermsize, java_xmx, java_maxpermsize):
+                 measurements, maven_xmx, maven_maxpermsize, java_xmx,\
+                 java_maxpermsize):
         self.scenarios = scenarios
         self.format = format
         self.tool = tool
         self.sizes = sizes
         self.queries = queries
         self.path = path
+        self.measurements = measurements
         self.maven_xmx = maven_xmx 
         self.maven_maxpermsize = maven_maxpermsize
         self.java_xmx = java_xmx

@@ -26,23 +26,23 @@ def run_test(configuration):
     if (os.path.exists("./trainbenchmark-results") == False):
         os.mkdir("trainbenchmark-results")
     handler.set_working_directory(configuration.path)
-    for scenario in configuration.scenarios:
-        for size in configuration.sizes:
-            target = targets_source.get_benchmark_jar(configuration.tool)
-            format = configuration.format
-            benchmark_artifact = targets_source.get_model_path(format,\
-                                                               scenario,\
-                                                               size)
-            for query in configuration.queries:
-                print(query)
-                xmx = configuration.java_xmx
-                maxpermsize = configuration.java_maxpermsize
-                subprocess.call(["java", "-Xmx" + xmx, "-XX:MaxPermSize="\
-                                 + maxpermsize, "-jar", target,\
-                                 "-scenario", scenario,\
-                                 "-benchmarkArtifact", benchmark_artifact,\
-                                 "-workspacePath", configuration.path,\
-                                 "-query", query, "-nMax", "1"])
+    for bnm_index in range(0,configuration.measurements):
+        for scenario in configuration.scenarios:
+            for size in configuration.sizes:
+                target = targets_source.get_benchmark_jar(configuration.tool)
+                format = configuration.format
+                benchmark_artifact = targets_source.get_model_path(format,\
+                                                                   scenario,\
+                                                                   size)
+                for query in configuration.queries:
+                    xmx = configuration.java_xmx
+                    maxpermsize = configuration.java_maxpermsize
+                    subprocess.call(["java", "-Xmx" + xmx, "-XX:MaxPermSize="\
+                                     + maxpermsize, "-jar", target,\
+                                     "-scenario", scenario,\
+                                     "-benchmarkArtifact", benchmark_artifact,\
+                                     "-workspacePath", configuration.path,\
+                                     "-query", query, "-nMax", "1"])
 
 
 # if this script is imported by an other module, 
