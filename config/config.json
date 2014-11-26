@@ -14,9 +14,7 @@
   "minSize": 1,
   "maxSize": 4,
   "workspacePath": ".",
-  "timeout": "12m",
-  "verbose": false,
-  "defaultArgs": "",
+  "measurements": 1,
   "queries": [
     "PosLength",
     "RouteSensor",
