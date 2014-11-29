@@ -20,6 +20,8 @@ import os
 import subprocess
 import sys
 import argparse
+import time
+import logging
 
 import handler
 import benchmark
@@ -65,7 +67,7 @@ def resolve_dependencies(configurations):
     handler.set_working_directory(current_directory)
 
 
-def maven_build(configuration, name):
+def maven_build(configuration, param):
     # change back working directory later, so store it now
     current_directory = os.getcwd() 
     # change working directory to this module's location
@@ -78,7 +80,8 @@ def maven_build(configuration, name):
     #handler.set_working_directory("../../../")
     handler.set_working_directory(configuration.path)
     subprocess.call(["mvn", "clean", "install", "-f",\
-                     "./trainbenchmark-core/pom.xml", "-P",name])
+                     "./trainbenchmark-core/pom.xml", "-P",\
+                     handler.get_package_name(param)])
     handler.set_working_directory(current_directory)
 
 
@@ -121,45 +124,53 @@ def build_projects(configurations, gen_model=False, build_core=True,\
                 all_repositories.pop()
             
 
+if (__name__ == "__main__"):
+    parser = argparse.ArgumentParser();
+    parser.add_argument("-g","--generate",
+                        help="generate models too",
+                        action="store_true")
+    parser.add_argument("-b","--benchmark",
+                        help="run the benchmark tests too",
+                        action="store_true")
+    parser.add_argument("-c","--core",
+                        help="just build the core",
+                        action="store_true")
+    parser.add_argument("-f","--format",
+                        help="just build the format",
+                        action="store_true")
+    parser.add_argument("-t","--tools",
+                        help="just build the tools",
+                        action="store_true")
 
-parser = argparse.ArgumentParser();
-parser.add_argument("-g","--generate",
-                    help="generate models too",
-                    action="store_true")
-parser.add_argument("-b","--benchmark",
-                    help="run the benchmark tests too",
-                    action="store_true")
-parser.add_argument("-c","--core",
-                    help="just build the core",
-                    action="store_true")
-parser.add_argument("-f","--format",
-                    help="just build the format",
-                    action="store_true")
-parser.add_argument("-t","--tools",
-                    help="just build the tools",
-                    action="store_true")
+    args = parser.parse_args()
+    # set working directory to this file's path
+    handler.set_working_directory()
+    log_file = "../../log/" + time.strftime("%Y-%m-%d %H:%M:%S") + ".txt"
+    log_file = log_file.replace(" ", "_")
+    log_file = log_file.replace(":", "_")
+    with open(log_file, "w"):
+        pass
+    logging.basicConfig(filename=log_file, format='%(levelname)s:%(message)s',\
+                        level=logging.INFO)
+    
+    
+    logging.info("First message")    
+    build_all = True
+    if (args.core == True or args.format == True or args.tools == True):
+        build_all = False
 
-args = parser.parse_args()
-# set working directory to this file's path
-#handler.set_working_directory()
+    configurations = loader.get_configs_from_json()
+    if (configurations is None):
+        sys.exit(1)
 
-build_all = True
-if (args.core == True or args.format == True or args.tools == True):
-    build_all = False
+    resolve_dependencies(configurations)
 
-configurations = loader.get_configs_from_json()
-if (configurations is None):
-    sys.exit(1)
-
-
-resolve_dependencies(configurations)
-
-if (build_all == True):
-    build_projects(configurations, args.generate, build_core=True,\
-                   build_formats=True, build_tools=True)
-else:
-    build_projects(configurations, args.generate, args.core, args.format, \
+    if (build_all == True):
+        build_projects(configurations, args.generate, build_core=True,\
+                       build_formats=True, build_tools=True)
+    else:
+        build_projects(configurations, args.generate, args.core, args.format, \
                    args.tools)
-if (args.benchmark == True):
-    for config in configurations:
-        benchmark.run_test(config)
+    if (args.benchmark == True):
+        for config in configurations:
+            benchmark.run_benchmark(config)

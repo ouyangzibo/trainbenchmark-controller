@@ -9,9 +9,14 @@ The module defines Configuration and Repository classes.
 class Configuration:
     """
     The class represents a configuration.
+    
     To add a new Repository object to self.repositories, call add_repository()
     method instead of self.repositories.append().
+    
+    @cvar all_repositories: contains all Repository objects which are attached
+          to any Configuration object
     """
+    
     all_repositories = list()
     def __init__(self, scenarios, format, tool, sizes, queries, path,\
                  measurements, maven_xmx, maven_maxpermsize, java_xmx,\
