@@ -10,7 +10,7 @@ import subprocess
 import os
 import sys
 
-import targets_source
+import targets
 import handler
 import loader
 
@@ -25,8 +25,11 @@ def generate_models(configuration):
     current_directory = os.getcwd() 
     # change working directory to this module's location
     handler.set_working_directory(configuration.path)
-    target = targets_source.get_generator_jar(configuration.format)
-    models_path = targets_source.get_common_model_path()
+    target = targets.get_generator_jar(configuration.format)
+    if (target is None):
+        # log here
+        pass
+    models_path = targets.get_common_model_path()
     if(os.path.exists(models_path) == False):
         os.makedirs(models_path)
     for scenario in configuration.scenarios:

@@ -10,6 +10,7 @@ Functions:
     set_working_directory: change the working directory
     get_power_of_two: creates a list of power of 2 numbers
     json_decode: load json file to a python json object
+    get_package_name: returns a corresponding package name
 """
 import json
 import os
@@ -67,3 +68,15 @@ def json_decode(json_path):
     else:
         return json_object
     return None
+
+
+def get_package_name(param):
+    """Returns a package name which corresponds to the param parameter.
+    """
+    packages = {
+              'drools5': 'drools',
+              'drools610': 'drools'
+             }
+    if (param in packages):
+        return packages[param]
+    return param
