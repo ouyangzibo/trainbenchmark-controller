@@ -13,7 +13,7 @@
   },
   "minSize": 1,
   "maxSize": 4,
-  "workspacePath": ".",
+  "workspacePath": "./tb-test/",
   "measurements": 1,
   "queries": [
     "PosLength",
@@ -22,7 +22,7 @@
     "SwitchSensor"
   ],
   "tools": [
-    "sesame"
+    "drools5"
   ],
-  "format": "rdf"
+  "format": "emf"
 }

@@ -20,7 +20,35 @@
     "depth": "50",
     "folder": "trainbenchmark-sql"
   },
+  "postgresql": {
+    "name": "sql",
+    "url": "https://github.com/FTSRG/trainbenchmark-sql.git",
+    "branch": "master",
+    "depth": "50",
+    "folder": "trainbenchmark-sql"
+  },
   "java": {
+    "name": "emf",
+    "url": "https://github.com/FTSRG/trainbenchmark-emf.git",
+    "branch": "master",
+    "depth": "50",
+    "folder": "trainbenchmark-emf"
+  },
+  "drools5": {
+    "name": "emf",
+    "url": "https://github.com/FTSRG/trainbenchmark-emf.git",
+    "branch": "master",
+    "depth": "50",
+    "folder": "trainbenchmark-emf"
+  },
+  "drools610": {
+    "name": "emf",
+    "url": "https://github.com/FTSRG/trainbenchmark-emf.git",
+    "branch": "master",
+    "depth": "50",
+    "folder": "trainbenchmark-emf"
+  },
+  "eclipseocl": {
     "name": "emf",
     "url": "https://github.com/FTSRG/trainbenchmark-emf.git",
     "branch": "master",

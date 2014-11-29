@@ -17,6 +17,19 @@
 	"depth": "50",
     "folder": "trainbenchmark-java"
   },
+  "drools5": {
+    "url": "https://github.com/FTSRG/trainbenchmark-drools.git",
+    "branch": "master",
+    "depth": "50",
+    "folder": "trainbenchmark-drools"
+  },
+  "drools610": {
+    "name": "drools610",
+    "url": "https://github.com/FTSRG/trainbenchmark-drools.git",
+    "branch": "master",
+    "depth": "50",
+    "folder": "trainbenchmark-drools"
+  },
   "fourstore": {
     "url": "https://github.com/FTSRG/trainbenchmark-fourstore.git",
 	"branch": "master",
@@ -28,6 +41,12 @@
 	"branch": "master",
 	"depth": "50",
     "folder": "trainbenchmark-mysql"
+  },
+  "postgresql": {
+    "url": "https://github.com/FTSRG/trainbenchmark-postgresql.git",
+	"branch": "master",
+	"depth": "50",
+    "folder": "trainbenchmark-postgresql"
   },
   "drools": {
     "url": "https://github.com/FTSRG/trainbenchmark-drools.git",

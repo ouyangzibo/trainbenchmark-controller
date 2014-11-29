@@ -138,7 +138,8 @@
             {
               "type": "string",
               "enum": [
-                "drools",
+                "drools5",
+                "drools610",
                 "eclipseocl",
                 "emfincquery",
                 "java"
@@ -148,7 +149,8 @@
           "additionalItems": {
             "type": "string",
             "enum": [
-              "drools",
+              "drools5",
+              "drools610",
               "eclipseocl",
               "emfincquery",
               "java"
@@ -157,8 +159,7 @@
         },
         "format": {
           "enum": [
-            "emf",
-            "emfuuid"
+            "emf"
           ]
         }
       }
@@ -235,14 +236,16 @@
             {
               "type": "string",
               "enum": [
-                "mysql"
+                "mysql",
+                "postgresql"
               ]
             }
           ],
           "additionalItems": {
             "type": "string",
             "enum": [
-              "mysql"
+              "mysql",
+              "postgresql"
             ]
           }
         },
