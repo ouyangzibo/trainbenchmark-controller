@@ -6,19 +6,18 @@ Trainbenchmark-controller is responsible for providing a configuration for Train
 ### Requirements
 Apart from the fundamental requirements like git, maven etc. (described [here](https://github.com/FTSRG/trainbenchmark-core/blob/master/README.md)) that is also necessary to possess a Python 3 interpreter. In the case of using virtual environment, python3.4 interpreter is necessary. Find further information about virtual environments [here](#pyvenv). All modules were written and tested on Linux Ubuntu operating system, so there is no guarantee yet that the scripts can be perfectly used on Windows.
 For executing scripts, there are no restrictions for the actual working directories, which means you can run the modules from any path.
-If any trainbenchmark projects have dependencies to each other, then they have to store a `dependencies.json` file under their `./dependencies/` subfolder.
-A typical `dependencies.json` file looks like this:
+If any trainbenchmark projects have dependencies to each other, then that must be written in the `config/dependencies.json` file.
+A part of the file can be seen here:
   ```
-  {
-    "dependencies": {
-      "url": "https://github.com/FTSRG/trainbenchmark-rdf.git",
-      "branch": "master",
-      "depth": "50",
-      "folder": "trainbenchmark-rdf"
-    }
+  "sesame": {
+    "name": "rdf",
+    "url": "https://github.com/FTSRG/trainbenchmark-rdf.git",
+    "branch": "master",
+    "depth": "50",
+    "folder": "trainbenchmark-rdf"
   }
   ```
-The example above shows the required dependency of trainbenchmark-sesame. Url means the remote repository's availability, branch and depth are git based parameters and the folder is the name of the directory that will be created on our local space. The latter is important since the Controller will search the projects under the given directory.
+The example above shows the required dependency of trainbenchmark-sesame. Url means the remote repository's availability, branch and depth are git based parameters and the folder is the name of the directory that will be created on our local space. The latter is important since the Controller will search the packages under the given directory.
 
 ### Installation guide
 At first, clone the trainbenchmark-controller repository to your local folder. It is advisable to clone to the same directory where you store the other trainbenchmark projects, since the controller searches them under the same parent folder. In the other case, if the controller did not find any of the certain projects, it would download them automatically. To clone the trainbenchmark-controller, execute the following command:
@@ -45,7 +44,7 @@ After this operation you are able to use the Controller as described [here](#Usa
 To turn off the environment, execute the `deactivate` command. However, every time, when a new terminal window is opened, the virtual environment must be activated again. That means you have to write the same activation command to be able to use the environment.
 
 ### <a name="Configuration"></a>Configuration
-Every configuration parameter which matters is stored in the `config.json` file. A typical structure of it can be seen here:
+Every configuration parameter which matters is stored in the `config/config.json` file. A typical structure of it can be seen here:
  
 ```
 {
@@ -64,6 +63,7 @@ Every configuration parameter which matters is stored in the `config.json` file.
   "minSize": 1,
   "maxSize": 4,
   "workspacePath": ".",
+  "measurements": 5,
   "queries": [
     "PosLength",
     "RouteSensor",
@@ -104,6 +104,7 @@ The parameters above can contain the following values:
   min:0 max:4
   min:9 max:15
   ```
+ * measurements: must be higher than 0
  * workspacePath: shall be equal to a path of an existing directory. The "." value is also acceptable, which refers to the same level of hierarchy of directories where the trainbenchmark-controller is located. For example if this parameter was equal with `./example`, then an `example` folder should be exist next to the trainbenchmark-controller directory.
  * queries: must be equal at least one of these values:
   * `PosLength`
@@ -127,7 +128,8 @@ The parameters above can contain the following values:
       * `neo4j`
   * format: `emf`
     * tools:
-      * `drools`
+      * `drools5`
+      * `drools610`
       * `java`
       * `emfincquery`
       * `eclipseocl`  
@@ -156,24 +158,24 @@ The parameters above can contain the following values:
 
 ### Modules
 The most important python modules of trainbenchmark-controller are the followings:
- * **build.py**: The module is responsible for resolving the dependencies between repositories, furthermore build the projects with maven. With the optional arguments, there is  an opportunity to generate the models and run the benchmark tests too.
+ * **build.py**: The module is responsible for resolving the dependencies between repositories, furthermore build the projects with Maven. Every operation is executed after the `config/config.json` file. With the optional arguments, there is also an opportunity to generate the models and run the benchmark measurements too.
   Arguments:
    * `-g`, `--generate`: generate the models too
-   * `-b`, `--benchmark`: run benchmark test after build
+   * `-b`, `--benchmark`: run benchmark after build
    * `-t`, `--tools`: build the tools
    * `-f`, `--format`: build the format
    * `-c`, `--core`: build the core  
-   Actually by executing `./build.py -tfc` script you got the same effect like running `./build.py`, since it builds everything basically.
- * **generate.py**: Generates the certain models, based on the `config.json` file.
- * **benchmark.py**: This module is responsible for running the benchmark tests.  
+   Actually by executing `./build.py -tfc` script you receive the same effect like running `./build.py`, since it builds everything basically.
+ * **generate.py**: Generates the certain models, based on the `config/config.json` file.
+ * **benchmark.py**: This module is responsible for running the benchmark measurements.  
 
-Important fact that all modules work with the certain tools and formats, which are given in `config.json`.
+Important fact that all modules work with the certain tools and formats, which are given in `config/config.json`.
 
 ### <a name="Usage"></a>Usage
 After the step of cloning the repository and install the required modules furthermore adjust the configuration file, you are able to build the projects by running the following script from the `trainbenchmark-controller/src/controller` directory, like this:
 `./build.py`
 
-This will clone the actual trainbenchmark repositories (if necessary) and run the maven build. But be careful, because some of the tools cannot be built without the generated models, as the JUNIT tests require for them (for example sesame). To avoid this conflict, it is worthwhile to execute the script at the first time like this:
+This will clone the actual trainbenchmark repositories (if necessary) and run the maven build. But be careful, as some of the tools cannot be built without the generated models, as the JUNIT tests require for them (for example sesame). To avoid this conflict, it is worthwhile to execute the script at the first time like this:
  
 ```
 ./build.py --generate
@@ -195,7 +197,7 @@ There is another opportunity to generate models distinctly via the `generate.py`
 ```
 The generated models will be created under the `trainbenchmark-models` directory next to the controller's folder.
 
-Eventually you can run the benchmark tests:
+Eventually you can run the benchmark:
 ```
 ./benchmark.py
 ```
@@ -208,23 +210,3 @@ In order to obtain exactly the same procedure by one script, run the `build.py` 
 //OR
 ./build.py -gb
 ```
-
-### Additional Information
-
-#### Other parts of the controller
-
- * `config_schema.json`: describes the `config.json` file's format. The latter must follow the defined rules by the schema.
- * `tools_source.json`: contains the remote repositories' url, folders, branches and depths of tools
- * `init.py`: install the external python modules
- * `handler.py`: a helper module which contains the most frequently used functions
- * `neo4j_installer.py`: install neo4j's dependencies 
- * `targets_source.py`:contains the paths of the certain tools' target .jar files and the used models by them.
-
-If any possible changes appeared such as alteration of paths of the projects' repositories or the generated .jar files, then modify `tools_source.json`, `targets_source.py` or even the certain `dependencies.json` files if necessary.
-
-#### Possible termination outputs
-The python modules implement different exit status codes, if some errors occurred. Possible output numbers and their meanings are the followings:
-* 1: `config.json` do not follows the defined rules, which described by the json schema
-* 2: problem appeared with the opening of `config.json` file or during the decoding process from JSON to a python object
-* 3: problem appeared with the opening of `tools_source.json` file or during the decoding process from JSON to a python object
-* 4: too short the range between minSize and maxSize in the `config.json` file
