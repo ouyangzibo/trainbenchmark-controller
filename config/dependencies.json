@@ -55,6 +55,13 @@
     "depth": "50",
     "folder": "trainbenchmark-emf"
   },
+ "emfincquery": {
+    "name": "emf",
+    "url": "https://github.com/FTSRG/trainbenchmark-emf.git",
+    "branch": "master",
+    "depth": "50",
+    "folder": "trainbenchmark-emf"
+  },
   "neo4j": {
     "name": "graph",
     "url": "https://github.com/FTSRG/trainbenchmark-graph.git",
