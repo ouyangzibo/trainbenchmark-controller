@@ -51,9 +51,13 @@ def get_model_path(format, scenario, size_str):
     """
     if (format not in models):
         return None
+    if (scenario == "Batch"):
+        scnr = "XForm"
+    else:
+        scnr = scenario
     # first format is the parameter, second is an embedded python function
     file = (common_models_path + "/railway-{SCENARIO}-{SIZE}." + \
-            models[format]).format(SCENARIO=scenario.lower(),SIZE=size_str)
+            models[format]).format(SCENARIO=scnr.lower(),SIZE=size_str)
     return file
 
 

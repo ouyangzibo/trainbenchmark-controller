@@ -33,12 +33,13 @@ def generate_models(configuration):
     if(os.path.exists(models_path) == False):
         os.makedirs(models_path)
     for scenario in configuration.scenarios:
-        for size in configuration.sizes:
+        for size in configuration.sizes:                
             java_xmx = configuration.java_xmx
             java_maxpermsize = configuration.java_maxpermsize
             subprocess.call(["java", "-Xmx" + java_xmx,"-XX:MaxPermSize=" +\
                              java_maxpermsize, "-jar", target, "-scenario",\
-                             scenario, "-size", size, "-workspacePath", \
+                             "XForm" if scenario=="Batch" else scenario, \
+                             "-size", size, "-workspacePath", \
                              configuration.path])
     handler.set_working_directory(current_directory)
 
