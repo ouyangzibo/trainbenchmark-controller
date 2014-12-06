@@ -6,6 +6,13 @@
     "depth": "50",
     "folder": "trainbenchmark-rdf"
   },
+  "jena": {
+    "name": "rdf",
+    "url": "https://github.com/FTSRG/trainbenchmark-rdf.git",
+    "branch": "master",
+    "depth": "50",
+    "folder": "trainbenchmark-rdf"
+  },
   "fourstore": {
     "name": "rdf",
     "url": "https://github.com/FTSRG/trainbenchmark-rdf.git",

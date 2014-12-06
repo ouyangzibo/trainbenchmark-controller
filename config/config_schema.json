@@ -206,7 +206,8 @@
               "enum": [
                 "fourstore",
                 "fourstore-ramdisk",
-                "sesame"
+                "sesame",
+                "jena"
               ]
             }
           ],
@@ -215,7 +216,8 @@
             "enum": [
               "fourstore",
               "fourstore-ramdisk",
-              "sesame"
+              "sesame",
+              "jena"
             ]
           }
         },

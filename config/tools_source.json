@@ -5,6 +5,12 @@
     "depth": "50",
     "folder": "trainbenchmark-sesame"
   },
+  "jena": {
+    "url": "https://github.com/FTSRG/trainbenchmark-jena.git",
+    "branch": "master",
+    "depth": "50",
+    "folder": "trainbenchmark-jena"
+  },
   "neo4j": {
     "url": "https://github.com/FTSRG/trainbenchmark-neo4j.git",
     "branch": "master",
