@@ -14,13 +14,11 @@ Arguments:
     -c, --core: just build the core
     -f, --format: just build the format
     -t, --tools: just build the tools
-    -
 """
 import os
 import subprocess
 import sys
 import argparse
-import time
 import logging
 
 import handler
@@ -28,6 +26,8 @@ import benchmark
 import generate
 import loader
 import deps
+import log
+
 
 def git_clone(repo):
     """
@@ -48,26 +48,32 @@ def resolve_dependencies(configurations):
     @param configurations: a list contain Configuration objects
     """
     for config in configurations:
-        for repo in config.repositories:
+        for repo in config.get_repositories():
             dependency = loader.get_dependency(repo.name)
             if (dependency is not None):
-                if (dependency not in config.repositories):
+                if (dependency not in config.get_repositories()):
                     config.add_repository(dependency)
+                    #config.repositories.add(dependency)
     # change back working directory later, so store it now
     current_directory = os.getcwd()
     for config in configurations:
-        # change working directory to this module's location
-        #handler.set_working_directory()
-        # jump to the project parent folder since config.path can be relative
-        #handler.set_working_directory("../../../")
         handler.set_working_directory(config.path)
-        for repo in config.repositories:
+        for repo in config.get_repositories():
             if (os.path.exists(os.getcwd() + "/" + repo.folder) == False):
                 git_clone(repo)
     handler.set_working_directory(current_directory)
 
 
-def maven_build(configuration, param):
+def maven_build(configuration, package):
+    """
+    Run a Maven build after the configuration object parameter and  
+    package name.
+    
+    Parameters:
+    @param configuration: Configuration object
+    @param package: package name
+    """
+    logging.info("Build: " + package)
     # change back working directory later, so store it now
     current_directory = os.getcwd() 
     # change working directory to this module's location
@@ -81,12 +87,12 @@ def maven_build(configuration, param):
     handler.set_working_directory(configuration.path)
     subprocess.call(["mvn", "clean", "install", "-f",\
                      "./trainbenchmark-core/pom.xml", "-P",\
-                     handler.get_package_name(param)])
+                     handler.get_package_name(package)])
     handler.set_working_directory(current_directory)
 
 
-def build_projects(configurations, gen_model=False, build_core=True,\
-                   build_formats=True, build_tools=True):
+def build_projects(configurations, build_core=True,build_formats=True, \
+                   build_tools=True):
     """Build the projects.
     """
     tools = list()
@@ -94,35 +100,41 @@ def build_projects(configurations, gen_model=False, build_core=True,\
     for config in configurations:
         tools.append(config.tool)
         formats.append(config.format)
-    for config in configurations:
-        # make a new instance of the static attribute
-        all_repositories = config.all_repositories.copy()
-        while(len(all_repositories) > 0):
-            # check if the last repo is part of the actual config repositories
-            if (all_repositories[-1] in config.repositories):
-                if (build_core == True and \
-                        all_repositories[-1].name not in tools and \
-                        all_repositories[-1].name not in formats):
-                    deps.install_dependencies(all_repositories[-1].name, \
-                                              all_repositories[-1].path)
-                    maven_build(config, all_repositories.pop().name)
-                elif (build_formats == True and \
-                        all_repositories[-1].name in formats):
-                    deps.install_dependencies(all_repositories[-1].name, \
-                                              all_repositories[-1].path)
-                    maven_build(config, all_repositories.pop().name)
-                elif (build_tools == True and \
-                        all_repositories[-1].name in tools):
-                    if (gen_model == True):
-                        generate.generate_models(config)
-                    deps.install_dependencies(all_repositories[-1].name, \
-                                              all_repositories[-1].path)
-                    maven_build(config, all_repositories.pop().name)
-                else:
-                    all_repositories.pop() 
+    logging.info("Build the following projects:" + tools.__str__() + " - " +\
+                  formats.__str__())
+    # make a new instance of the static attribute
+    # all_repositories contains every Repository which attached to
+    # the Configuration object
+    all_repositories = configurations[0].all_repositories.copy()
+    while(len(all_repositories) > 0):
+            # first build the top repository in the hierarchy
+            if (build_core == True and \
+                    all_repositories[-1].name not in tools and \
+                    all_repositories[-1].name not in formats):
+                # install further dependencies if necessary
+                deps.install_dependencies(all_repositories[-1].name, \
+                                          all_repositories[-1].path)
+                maven_build(all_repositories[-1].config, \
+						    all_repositories.pop().name)
+            elif (build_formats == True and \
+                    all_repositories[-1].name in formats):
+                # install further dependencies if necessary
+                deps.install_dependencies(all_repositories[-1].name, \
+                                            all_repositories[-1].path)
+                maven_build(all_repositories[-1].config, \
+						    all_repositories.pop().name)
+                generate.generate_models(all_repositories[-1].config, \
+                                         basic=True)
+            elif (build_tools == True and \
+                    all_repositories[-1].name in tools):
+                # install further dependencies if necessary
+                deps.install_dependencies(all_repositories[-1].name, \
+                                          all_repositories[-1].path)
+                maven_build(all_repositories[-1].config, \
+						    all_repositories.pop().name)
             else:
                 all_repositories.pop()
-            
+
 
 if (__name__ == "__main__"):
     parser = argparse.ArgumentParser();
@@ -143,34 +155,32 @@ if (__name__ == "__main__"):
                         action="store_true")
 
     args = parser.parse_args()
+    log.init_log()
     # set working directory to this file's path
     handler.set_working_directory()
-    log_file = "../../log/" + time.strftime("%Y-%m-%d %H:%M:%S") + ".txt"
-    log_file = log_file.replace(" ", "_")
-    log_file = log_file.replace(":", "_")
-    with open(log_file, "w"):
-        pass
-    logging.basicConfig(filename=log_file, format='%(levelname)s:%(message)s',\
-                        level=logging.INFO)
-    
-    
-    logging.info("First message")    
     build_all = True
+    
+    logging.info("Main module: build.py.")
     if (args.core == True or args.format == True or args.tools == True):
         build_all = False
 
     configurations = loader.get_configs_from_json()
     if (configurations is None):
+        logging.error("No valid configurations were loaded.")
         sys.exit(1)
 
     resolve_dependencies(configurations)
 
     if (build_all == True):
-        build_projects(configurations, args.generate, build_core=True,\
+        build_projects(configurations, build_core=True,\
                        build_formats=True, build_tools=True)
     else:
-        build_projects(configurations, args.generate, args.core, args.format, \
+        build_projects(configurations, args.core, args.format, \
                    args.tools)
+    
+    if (args.generate == True):
+        for config in configurations:
+            generate.generate_models(config)
     if (args.benchmark == True):
         for config in configurations:
             benchmark.run_benchmark(config)
