@@ -4,17 +4,18 @@ Created on Sep 30, 2014
 
 @author: Zsolt Kovari
 
-This module is responsible for running the benchmark test.
+This module is responsible for running the benchmark measurements.
 """
 import subprocess
 import sys
 import os
 import platform
+import logging
 
 import targets
 import handler
 import loader
-
+import log
 
 def run_benchmark(configuration):
     """Run the benchmark after the configuration parameter.
@@ -22,6 +23,7 @@ def run_benchmark(configuration):
     Parameters:
     @param configuration: a Configuration object
     """
+    logging.info("benchmark.run_benchmark called.")
     handler.set_working_directory(configuration.path)
     if (os.path.exists("./trainbenchmark-results") == False):
         os.mkdir("trainbenchmark-results")
@@ -40,6 +42,9 @@ def run_benchmark(configuration):
                 xmx = configuration.java_xmx
                 maxpermsize = configuration.java_maxpermsize
                 for query in configuration.queries:
+                    logging.info("Run benchmark:(tool:" + configuration.tool + \
+                                 ", scenario:" + scenario +\
+                                 ", query:" + query + ", size:" + str(size)+")")
                     subprocess.call(["java", "-Xmx" + xmx, "-XX:MaxPermSize="\
                                      + maxpermsize, "-jar", target,\
                                      "-scenario", scenario,\
@@ -55,6 +60,7 @@ def run_eclipse_based_benchmark(configuration):
     Parameters:
     @param configuration: a Configuration object
     """
+    logging.info("benchmark.run_eclipse_based_benchmark called")
     if (platform.system() == "Linux"):
         os = "linux"
         ws = "gtk"
@@ -62,7 +68,7 @@ def run_eclipse_based_benchmark(configuration):
         os = "macosx"
         ws = "cocoa"
     else:
-        print("Operating System is not supported!")
+        logging.error("Operating System is not supported!")
         return None
     target = ("./trainbenchmark-{TOOL}/hu.bme.mit.trainbenchmark.benchmark."\
            + "{TOOL}.product/target/products/hu.bme.mit.trainbenchmark."\
@@ -79,6 +85,9 @@ def run_eclipse_based_benchmark(configuration):
                 xmx = configuration.java_xmx
                 maxpermsize = configuration.java_maxpermsize
                 for query in configuration.queries:
+                    logging.info("Run benchmark:(tool:" + configuration.tool + \
+                                 ", scenario:" + scenario +\
+                                 ", query:" + query + ", size:" + str(size)+")")
                     subprocess.call([target, "-scenario", scenario,\
                                      "-benchmarkArtifact", benchmark_artifact,\
                                      "-workspacePath", configuration.path,\
@@ -89,14 +98,18 @@ def run_eclipse_based_benchmark(configuration):
                                      "-XX:MaxPermSize=" + maxpermsize, \
                                      ])
 
+
 eclipse_based = {
                 'eclipseocl': run_eclipse_based_benchmark,
                 'emfincquery': run_eclipse_based_benchmark
                 }
 
 if (__name__ == "__main__"):
+    log.init_log()
+    logging.info("Main module:benchmark")
     configurations = loader.get_configs_from_json()
     if (configurations is None):
+        logging.error("No valid configurations were loaded.")
         sys.exit(1)
     for config in configurations:
         run_benchmark(config)
