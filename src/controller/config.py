@@ -32,7 +32,7 @@ class Configuration:
         self.maven_maxpermsize = maven_maxpermsize
         self.java_xmx = java_xmx
         self.java_maxpermsize = java_maxpermsize
-        self.repositories = list()
+        self.__repositories = list()
     
     
     def add_repository(self, repository):
@@ -43,10 +43,15 @@ class Configuration:
         repository: a Repository object
         """
         repository.path = self.path
-        self.repositories.append(repository)
+        repository.config = self
+        self.__repositories.append(repository)
         if (repository in self.all_repositories):
             self.all_repositories.remove(repository)
         self.all_repositories.append(repository)
+
+    
+    def get_repositories(self):
+        return self.__repositories
 
 
 class Repository:
@@ -58,8 +63,9 @@ class Repository:
         self.folder = folder
         self.branch = branch
         self.depth = depth
-        # initialized when a Repository attached to a Configuration object
+        # initialized when a Repository is attached to a Configuration object
         self.path = None
+        self.config = None
         
     
     def __eq__(self, other):
